@@ -3,6 +3,8 @@ import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import userRouter from './router/user/userRouter';
 import router from './router/test/testRouter';
+import errorHandle from './middleware/error/error';
+import error from './middleware/error/error';
 class App {
     public app: express.Application;
     constructor() {
@@ -13,6 +15,7 @@ class App {
 
     private init (): void {
         this.app.use(bodyParser.urlencoded({ extended: false }));
+        // this.app.use(error.notFound);
     }
 
     private router(): void {

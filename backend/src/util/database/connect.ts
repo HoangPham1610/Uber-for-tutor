@@ -1,6 +1,5 @@
 import * as mysql from 'mysql';
 import * as dotenv from 'dotenv';
-import {promisify} from 'util';
 
 class ConnectDatabase {
 
@@ -17,7 +16,6 @@ class ConnectDatabase {
 			database: process.env.DB_NAME
 		}
 		this.createConnection();
-		promisify(this.asyncQuerry);
 	}
 	private createConnection(): void {
 		this.pool =  mysql.createPool(this.mysqlConfig);
@@ -44,33 +42,39 @@ class ConnectDatabase {
 		this.poolConnection.release();
 	}
 
-	public asyncQuerry(sql: string, params: any) {
+	/**
+	 * 
+	 * @param sql sql query
+	 * @param params params sql
+	 */
+	public asyncQuery(sql: string, params?: any) {
 		return new Promise((resolve, reject) => {
 			try {
 				this.beginTransaction();
 				this.poolConnection.query(sql, params, (err: mysql.MysqlError, results: any) => {
 					if (err) {
 						this.poolConnection.rollback();
+						this.endTransaction();
 						reject(err);
 					} else {
 						resolve(results);
-						console.log('query result: ', results);
+						// console.log('query result: ', results);
 					}
 				});
 				console.log('await query');
 				this.poolConnection.commit((err) => {
 					if (err) {
-					  return this.poolConnection.rollback(function() {
-						throw err;
-					  });
+					  this.poolConnection.rollback();
+					  this.endTransaction();
+					  return err;
 					}
 				});
-				this.endTransaction();
 			} catch (err) {
 				throw err;
 			}
 		});
 	}
+
 	public query(sql: string, params: any) {
 		let queryResults = null;
 		try {

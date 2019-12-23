@@ -7,11 +7,9 @@ class ErrorHandle {
 
     public notFound(req: Request, res: Response, next: NextFunction) {
         res.status(404).send({message: 'Not Found'});
-    }
-    private initRouter(): void {
-        
+        next();
     }
 }
 
 
-export default ErrorHandle;
+export default new ErrorHandle();
